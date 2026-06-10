@@ -1,0 +1,4 @@
+D:/programs/Chithra/build/CMakeFiles/chithra_core.dir
+D:/programs/Chithra/build/CMakeFiles/Chithra.dir
+D:/programs/Chithra/build/CMakeFiles/edit_cache.dir
+D:/programs/Chithra/build/CMakeFiles/rebuild_cache.dir

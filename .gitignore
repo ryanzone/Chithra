@@ -30,3 +30,5 @@ compile_commands.json
 # OS files
 .DS_Store
 Thumbs.db
+
+*.exe

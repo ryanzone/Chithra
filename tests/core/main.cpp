@@ -1,34 +1,42 @@
 #include <iostream>
+#include <memory>
 
 #include "../../core/document/Document.hpp"
-#include "../../core/managers/LayerManager.hpp"
 
-#include "../../core/tools/FillTool.hpp"
-#include "../../core/tools/ToolContext.hpp"
+#include "../../core/history/HistoryManager.hpp"
 
-#include "../../core/canvas/Canvas.hpp"
-#include "../../core/file/ImageIO.hpp"
+#include "../../core/commands/MoveLayerCommand.hpp"
 
 int main() {
   Document doc(512, 512);
 
-  LayerManager layerManager(doc);
+  doc.addLayer("Layer A");
+  doc.addLayer("Layer B");
+  doc.addLayer("Layer C");
 
-  layerManager.addLayer("Background");
+  HistoryManager history;
 
-  ToolContext context{layerManager};
+  std::cout << "Before Move:" << std::endl;
 
-  FillTool fill(Color(255, 255, 0));
+  for (const auto &layer : doc.getLayers()) {
+    std::cout << layer.getName() << std::endl;
+  }
 
-  fill.apply(context, 0, 0);
+  history.executeCommand(std::make_unique<MoveLayerCommand>(doc, 0, 1));
 
-  Canvas canvas;
+  std::cout << "\nAfter Move:" << std::endl;
 
-  Image result = canvas.render(doc);
+  for (const auto &layer : doc.getLayers()) {
+    std::cout << layer.getName() << std::endl;
+  }
 
-  ImageIO::savePNG(result, "filled.png");
+  history.undo();
 
-  std::cout << "Fill complete" << std::endl;
+  std::cout << "\nAfter Undo:" << std::endl;
+
+  for (const auto &layer : doc.getLayers()) {
+    std::cout << layer.getName() << std::endl;
+  }
 
   return 0;
 }

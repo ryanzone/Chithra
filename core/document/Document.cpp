@@ -9,12 +9,42 @@ size_t Document::addLayer(const std::string &name) {
 }
 
 void Document::removeLayer(size_t index) {
-  if (index < layers.size()) {
-    layers.erase(layers.begin() + index);
+  if (index >= layers.size()) {
+    return;
   }
+
+  layers.erase(layers.begin() + index);
 }
 
+void Document::moveLayerUp(size_t index) {
+  if (index + 1 >= layers.size())
+    return;
+
+  std::swap(layers[index], layers[index + 1]);
+}
+
+void Document::moveLayerDown(size_t index) {
+  if (index == 0)
+    return;
+
+  std::swap(layers[index], layers[index - 1]);
+}
+void Document::duplicateLayer(size_t index) {
+  if (index >= layers.size()) {
+    return;
+  }
+
+  layers.insert(layers.begin() + index + 1, layers[index]);
+}
 std::vector<Layer> &Document::getLayers() { return layers; }
+
+void Document::renameLayer(size_t index, const std::string &name) {
+  if (index >= layers.size()) {
+    return;
+  }
+
+  layers[index].setName(name);
+}
 
 int Document::getWidth() const { return width; }
 

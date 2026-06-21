@@ -8,11 +8,14 @@ class MoveSelectionCommand : public Command {
 private:
   Selection &selection;
 
-  int oldX;
-  int oldY;
+  int oldStartX;
+  int oldStartY;
 
-  int newX;
-  int newY;
+  int oldEndX;
+  int oldEndY;
+
+  int newStartX;
+  int newStartY;
 
 public:
   MoveSelectionCommand(Selection &selection, int newX, int newY);

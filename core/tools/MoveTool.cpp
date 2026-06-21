@@ -11,6 +11,14 @@ void MoveTool::apply(ToolContext &context, int x, int y) {
     return;
   }
 
-  selection->x = x;
-  selection->y = y;
+  int width = selection->endX - selection->startX;
+
+  int height = selection->endY - selection->startY;
+
+  selection->startX = x;
+  selection->startY = y;
+
+  selection->endX = x + width;
+
+  selection->endY = y + height;
 }

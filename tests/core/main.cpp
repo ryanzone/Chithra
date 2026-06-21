@@ -1,42 +1,46 @@
 #include <iostream>
-#include <memory>
 
 #include "../../core/document/Document.hpp"
+#include "../../core/managers/LayerManager.hpp"
 
-#include "../../core/history/HistoryManager.hpp"
+#include "../../core/tools/BrushTool.hpp"
+#include "../../core/tools/ToolContext.hpp"
 
-#include "../../core/commands/MoveLayerCommand.hpp"
+#include "../../core/project/ProjectSerializer.hpp"
+
+#include "../../core/canvas/Canvas.hpp"
+#include "../../core/file/ImageIO.hpp"
 
 int main() {
   Document doc(512, 512);
 
-  doc.addLayer("Layer A");
-  doc.addLayer("Layer B");
-  doc.addLayer("Layer C");
+  LayerManager layerManager(doc);
 
-  HistoryManager history;
+  layerManager.addLayer("Background");
 
-  std::cout << "Before Move:" << std::endl;
+  ToolContext context{layerManager};
 
-  for (const auto &layer : doc.getLayers()) {
-    std::cout << layer.getName() << std::endl;
+  BrushTool brush(40, Color(255, 0, 0));
+
+  brush.apply(context, 256, 256);
+
+  ProjectSerializer::save(doc, "test.chi");
+
+  Document loadedDoc(1, 1);
+
+  if (!ProjectSerializer::load(loadedDoc, "test.chi")) {
+    std::cout << "Load Failed" << std::endl;
+
+    return 1;
   }
 
-  history.executeCommand(std::make_unique<MoveLayerCommand>(doc, 0, 1));
+  Canvas canvas;
 
-  std::cout << "\nAfter Move:" << std::endl;
+  Image result = canvas.render(loadedDoc);
 
-  for (const auto &layer : doc.getLayers()) {
-    std::cout << layer.getName() << std::endl;
-  }
+  ImageIO::savePNG(result, "loaded.png");
 
-  history.undo();
-
-  std::cout << "\nAfter Undo:" << std::endl;
-
-  for (const auto &layer : doc.getLayers()) {
-    std::cout << layer.getName() << std::endl;
-  }
+  std::cout << "Save/Load Success" << std::endl;
 
   return 0;
 }

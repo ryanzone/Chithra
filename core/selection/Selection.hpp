@@ -1,13 +1,17 @@
 #pragma once
 
 struct Selection {
-  int x;
-  int y;
+  int startX;
+  int startY;
 
-  int width;
-  int height;
+  int endX;
+  int endY;
 
   bool active;
 
-  Selection() : x(0), y(0), width(0), height(0), active(false) {}
+  Selection() : startX(0), startY(0), endX(0), endY(0), active(false) {}
+
+  int width() const { return endX - startX; }
+
+  int height() const { return endY - startY; }
 };

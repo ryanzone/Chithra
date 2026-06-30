@@ -1,35 +1,56 @@
 #include "LayerManager.hpp"
 
 LayerManager::LayerManager(Document &document)
-    : document(document), activeLayerIndex(0) {}
+    : document(document), activeLayerIndex(-1) {}
 
 void LayerManager::addLayer(const std::string &name) {
   document.addLayer(name);
 
-  activeLayerIndex = document.getLayers().size() - 1;
+  activeLayerIndex = static_cast<int>(document.getLayers().size()) - 1;
 }
 
 void LayerManager::removeLayer(size_t index) {
   document.removeLayer(index);
 
-  if (activeLayerIndex >= document.getLayers().size() &&
-      !document.getLayers().empty()) {
-    activeLayerIndex = document.getLayers().size() - 1;
+  if (document.getLayers().empty()) {
+    activeLayerIndex = -1;
+    return;
+  }
+
+  if (activeLayerIndex >= static_cast<int>(document.getLayers().size())) {
+    activeLayerIndex = static_cast<int>(document.getLayers().size()) - 1;
   }
 }
 
-void LayerManager::setActiveLayer(size_t index) {
-  if (index < document.getLayers().size()) {
+void LayerManager::setActiveLayer(int index) {
+  if (index < 0) {
+    activeLayerIndex = -1;
+  } else if (static_cast<size_t>(index) < document.getLayers().size()) {
     activeLayerIndex = index;
   }
 }
-
+void LayerManager::clearActiveLayer() { activeLayerIndex = -1; }
 Layer *LayerManager::getActiveLayer() {
-  if (document.getLayers().empty()) {
+  if (activeLayerIndex < 0) {
+    return nullptr;
+  }
+
+  if (activeLayerIndex >= static_cast<int>(document.getLayers().size())) {
     return nullptr;
   }
 
   return &document.getLayers()[activeLayerIndex];
 }
 
-size_t LayerManager::getActiveLayerIndex() const { return activeLayerIndex; }
+int LayerManager::getActiveLayerIndex() const { return activeLayerIndex; }
+void LayerManager::reorderLayers(int srcRow, int destRow) {
+  document.reorderLayers(srcRow, destRow);
+
+  if (activeLayerIndex == srcRow) {
+    activeLayerIndex = destRow;
+  } else if (srcRow < activeLayerIndex && destRow >= activeLayerIndex) {
+    activeLayerIndex--;
+  } else if (srcRow > activeLayerIndex && destRow <= activeLayerIndex) {
+    activeLayerIndex++;
+  }
+}

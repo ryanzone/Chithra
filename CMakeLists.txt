@@ -29,12 +29,16 @@ target_include_directories(chithra_core
 
 add_executable(Chithra
     ui/main.cpp
-
+ui/resources/icons.qrc
     ui/MainWindow.cpp
     ui/MainWindow.hpp
-
+    core/tools/ToolManager.cpp
     ui/CanvasWidget.cpp
     ui/CanvasWidget.hpp
+    ui/LayerItemWidget.cpp
+    ui/LayerItemWidget.hpp
+    ui/Paneldock.cpp
+    ui/Paneldock.hpp
 )
 
 target_link_libraries(Chithra

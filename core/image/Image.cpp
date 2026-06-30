@@ -3,11 +3,7 @@
 Image::Image() : width(0), height(0) {}
 
 Image::Image(int width, int height)
-    : width(width), height(height), pixels(width * height * 4, 0) {
-  for (int i = 0; i < width * height; i++) {
-    pixels[i * 4 + 3] = 255;
-  }
-}
+    : width(width), height(height), pixels(width * height * 4, 0) {}
 
 int Image::getWidth() const { return width; }
 

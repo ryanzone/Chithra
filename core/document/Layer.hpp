@@ -8,7 +8,6 @@ class Layer {
 private:
   std::string name;
   Image image;
-
   bool visible;
   float opacity;
 
@@ -25,6 +24,5 @@ public:
   const Image &getImage() const;
   void setVisible(bool visible);
   void setOpacity(float opacity);
-
   Image &getImage();
 };

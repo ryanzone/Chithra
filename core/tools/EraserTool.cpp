@@ -6,14 +6,15 @@ void EraserTool::setSize(int size) { eraserSize = size; }
 void EraserTool::apply(ToolContext &context, int x, int y) {
   Layer *layer = context.layerManager.getActiveLayer();
 
-  if (!layer) {
-    return;
+  if (layer) {
+    erase(layer->getImage(), x, y, false);
+  } else {
+    erase(context.canvas, x, y, true);
   }
-
-  erase(layer->getImage(), x, y);
 }
 
-void EraserTool::erase(Image &image, int centerX, int centerY) {
+void EraserTool::erase(Image &image, int centerX, int centerY,
+                       bool background) {
   auto &pixels = image.getPixels();
 
   int width = image.getWidth();
@@ -28,10 +29,17 @@ void EraserTool::erase(Image &image, int centerX, int centerY) {
 
       int index = (y * width + x) * 4;
 
-      pixels[index] = 0;
-      pixels[index + 1] = 0;
-      pixels[index + 2] = 0;
-      pixels[index + 3] = 0;
+      if (background) {
+        pixels[index] = 255;
+        pixels[index + 1] = 255;
+        pixels[index + 2] = 255;
+        pixels[index + 3] = 255;
+      } else {
+        pixels[index] = 0;
+        pixels[index + 1] = 0;
+        pixels[index + 2] = 0;
+        pixels[index + 3] = 0;
+      }
     }
   }
 }

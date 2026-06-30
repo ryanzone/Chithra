@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/add-layer.svg</file>
+        <file>icons/eye-hidden.svg</file>
+        <file>icons/eye-visible.svg</file>
+        <file>icons/delete-layer.svg</file>
+    </qresource>
+</RCC>

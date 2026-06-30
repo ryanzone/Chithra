@@ -14,7 +14,7 @@ public:
 
   void apply(ToolContext &context, int x, int y) override;
 
-  void erase(Image &image, int centerX, int centerY);
+  void erase(Image &image, int centerX, int centerY, bool background);
 
   void setSize(int size);
 };

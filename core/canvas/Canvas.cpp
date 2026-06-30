@@ -1,7 +1,7 @@
 #include "Canvas.hpp"
 
 Image Canvas::render(const Document &document) {
-  Image result(document.getWidth(), document.getHeight());
+  Image result = document.getCanvas();
 
   auto &resultPixels = result.getPixels();
 

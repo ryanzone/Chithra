@@ -5,7 +5,7 @@
 class LayerManager {
 private:
   Document &document;
-  size_t activeLayerIndex;
+  int activeLayerIndex;
 
 public:
   LayerManager(Document &document);
@@ -14,9 +14,11 @@ public:
 
   void removeLayer(size_t index);
 
-  void setActiveLayer(size_t index);
+  void setActiveLayer(int index);
 
   Layer *getActiveLayer();
 
-  size_t getActiveLayerIndex() const;
+  int getActiveLayerIndex() const;
+  void clearActiveLayer();
+  void reorderLayers(int srcRow, int destRow);
 };

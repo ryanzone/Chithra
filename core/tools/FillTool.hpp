@@ -10,6 +10,6 @@ private:
 
 public:
   FillTool(Color color = Color(255, 255, 0));
-
+  void setColor(const Color &color);
   void apply(ToolContext &context, int x, int y) override;
 };

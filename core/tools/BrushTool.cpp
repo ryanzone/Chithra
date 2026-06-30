@@ -8,11 +8,10 @@ void BrushTool::setColor(const Color &color) { this->color = color; }
 void BrushTool::apply(ToolContext &context, int x, int y) {
   Layer *layer = context.layerManager.getActiveLayer();
 
-  if (!layer) {
-    return;
-  }
-
-  draw(layer->getImage(), x, y);
+  if (layer)
+    draw(layer->getImage(), x, y);
+  else
+    draw(context.canvas, x, y);
 }
 void BrushTool::draw(Image &image, int centerX, int centerY) {
   auto &pixels = image.getPixels();

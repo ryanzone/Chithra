@@ -4,5 +4,6 @@
         <file>icons/eye-hidden.svg</file>
         <file>icons/eye-visible.svg</file>
         <file>icons/delete-layer.svg</file>
+        <file>icons/chitra.svg</file>
     </qresource>
 </RCC>

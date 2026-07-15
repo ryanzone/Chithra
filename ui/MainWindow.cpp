@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QFrame>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -203,6 +204,7 @@ void MainWindow::applyGlobalStyle() {
 // ═══════════════════════════════════════════════════════════════════════════════
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setWindowTitle("Chithra");
+  setWindowIcon(QIcon(":/icons/icons/chitra.svg"));
   resize(1400, 900);
 
   applyGlobalStyle();

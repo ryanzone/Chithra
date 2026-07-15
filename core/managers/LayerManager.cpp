@@ -10,6 +10,14 @@ void LayerManager::addLayer(const std::string &name) {
 }
 
 void LayerManager::removeLayer(size_t index) {
+  if (index >= document.getLayers().size()) {
+    return;
+  }
+
+  if (activeLayerIndex > static_cast<int>(index)) {
+    activeLayerIndex--;
+  }
+
   document.removeLayer(index);
 
   if (document.getLayers().empty()) {

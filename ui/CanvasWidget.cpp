@@ -5,22 +5,39 @@
 #include <QDebug>
 #include <QImage>
 #include <QPainter>
+#include <algorithm>
 
-// Canvas size: needs to have different canvas sizes
-// when the user selects a preset size
 CanvasWidget::CanvasWidget(QWidget *parent)
     : QWidget(parent), document(800, 600), layerManager(document),
       brushTool(10), eraserTool(10), fillTool(Color(255, 0, 0, 255)),
-      moveTool(&selectionTool.getSelection()) {
+      moveTool(&selectionTool.getSelection()),
+      shapeTool(ShapeType::Rectangle, Color(0, 0, 0, 255), 2, false) {
   toolManager.setCurrentTool(&brushTool);
+  setMinimumSize(400, 300);
+  setMouseTracking(true);
+}
 
-  setMinimumSize(800, 600);
+QPoint CanvasWidget::canvasOffset() const {
+  int x = (width() - document.getWidth()) / 2;
+  int y = (height() - document.getHeight()) / 2;
+  return QPoint(x, y);
+}
+
+QPoint CanvasWidget::toCanvasCoords(QMouseEvent *event) const {
+  QPoint off = canvasOffset();
+  int x = static_cast<int>(event->position().x()) - off.x();
+  int y = static_cast<int>(event->position().y()) - off.y();
+  return QPoint(x, y);
 }
 
 void CanvasWidget::paintEvent(QPaintEvent *) {
   QPainter painter(this);
+  painter.setRenderHint(QPainter::Antialiasing, false);
 
-  painter.fillRect(rect(), QColor(35, 35, 35));
+  // Checkerboard background behind canvas
+  painter.fillRect(rect(), QColor(30, 30, 30));
+
+  QPoint off = canvasOffset();
 
   Image rendered = canvas.render(document);
 
@@ -28,111 +45,139 @@ void CanvasWidget::paintEvent(QPaintEvent *) {
                rendered.getHeight(), rendered.getWidth() * 4,
                QImage::Format_RGBA8888);
 
-  int x = (width() - image.width()) / 2;
-  int y = (height() - image.height()) / 2;
+  painter.drawImage(off.x(), off.y(), image);
 
-  painter.drawImage(x, y, image);
+  // Selection overlay
   auto &sel = selectionTool.getSelection();
-
   if (sel.active) {
-    painter.setPen(QPen(Qt::blue, 1, Qt::DashLine));
+    painter.setPen(QPen(QColor(0, 120, 212), 1, Qt::DashLine));
+    painter.setBrush(QColor(0, 120, 212, 30));
+    painter.drawRect(off.x() + sel.startX, off.y() + sel.startY, sel.width(),
+                     sel.height());
+  }
 
-    painter.drawRect(x + sel.startX, y + sel.startY, sel.width(), sel.height());
+  // Shape preview overlay
+  if (shapeTool.isDragging() && toolManager.getCurrentTool() == &shapeTool) {
+    painter.setPen(QPen(QColor(0, 120, 212), 1, Qt::DashLine));
+    painter.setBrush(Qt::NoBrush);
+
+    int sx = off.x() + shapeTool.getStartX();
+    int sy = off.y() + shapeTool.getStartY();
+    int ex = off.x() + shapeTool.getEndX();
+    int ey = off.y() + shapeTool.getEndY();
+
+    int left = std::min(sx, ex);
+    int top = std::min(sy, ey);
+    int w = std::abs(ex - sx);
+    int h = std::abs(ey - sy);
+
+    switch (shapeTool.getShapeType()) {
+    case ShapeType::Rectangle:
+      painter.drawRect(left, top, w, h);
+      break;
+    case ShapeType::Ellipse:
+      painter.drawEllipse(left, top, w, h);
+      break;
+    case ShapeType::Line:
+      painter.drawLine(sx, sy, ex, ey);
+      break;
+    }
   }
 }
-Document &CanvasWidget::getDocument() { return document; }
 
+Document &CanvasWidget::getDocument() { return document; }
 const Document &CanvasWidget::getDocument() const { return document; }
 
-// apply tools its in the tool manager (existing tools as of now: erase, brush)
-void CanvasWidget::applyTool(int x, int y) {
-  Tool *tool = toolManager.getCurrentTool();
+void CanvasWidget::mousePressEvent(QMouseEvent *event) {
+  if (event->button() != Qt::LeftButton)
+    return;
 
+  painting = true;
+  QPoint pos = toCanvasCoords(event);
+  int x = pos.x();
+  int y = pos.y();
+
+  Tool *tool = toolManager.getCurrentTool();
+  if (tool) {
+    ToolContext context{layerManager, document.getCanvas()};
+    tool->onPress(context, x, y);
+  }
+
+  lastPoint = pos;
+  update();
+}
+
+void CanvasWidget::mouseMoveEvent(QMouseEvent *event) {
+  QPoint pos = toCanvasCoords(event);
+  emit cursorMoved(pos.x(), pos.y());
+
+  if (!painting)
+    return;
+
+  int x = pos.x();
+  int y = pos.y();
+
+  Tool *tool = toolManager.getCurrentTool();
   if (!tool)
     return;
 
   ToolContext context{layerManager, document.getCanvas()};
 
-  tool->apply(context, x, y);
-}
+  if (tool->needsPreview()) {
+    tool->onMove(context, x, y);
+  } else {
+    // Interpolate for brush/eraser
+    int dx = x - lastPoint.x();
+    int dy = y - lastPoint.y();
+    int steps = std::max(std::abs(dx), std::abs(dy));
 
-void CanvasWidget::setFillTool() {
-  qDebug() << "Fill Tool";
-  toolManager.setCurrentTool(&fillTool);
-}
+    if (steps == 0) {
+      tool->onMove(context, x, y);
+    } else {
+      for (int i = 0; i <= steps; i++) {
+        float t = static_cast<float>(i) / steps;
+        int px = static_cast<int>(lastPoint.x() + dx * t);
+        int py = static_cast<int>(lastPoint.y() + dy * t);
+        tool->onMove(context, px, py);
+      }
+    }
+  }
 
-void CanvasWidget::setSelectionTool() {
-  qDebug() << "Selection Tool";
-  toolManager.setCurrentTool(&selectionTool);
-}
-void CanvasWidget::setMoveTool() {
-  qDebug() << "Move Tool";
-  toolManager.setCurrentTool(&moveTool);
-}
-// adding layers
-void CanvasWidget::addLayer() {
-  int count = document.getLayers().size();
-  layerManager.addLayer("Layer " + std::to_string(count + 1));
-
-  qDebug() << "Layers:" << document.getLayers().size();
-
-  emit layersChanged();
-
+  lastPoint = pos;
   update();
 }
 
-// mouse press works well in 800x600 as of now, needs to have dynamic sizing
-void CanvasWidget::mousePressEvent(QMouseEvent *event) {
-  painting = true;
-
-  int x = static_cast<int>(event->position().x()) - (width() - 800) / 2;
-
-  int y = static_cast<int>(event->position().y()) - (height() - 600) / 2;
-
-  applyTool(x, y);
-
-  lastPoint = QPoint(x, y);
-
-  update();
-}
-
-// mouse move works well in 800x600 as of now, needs to have dynamic sizing
-void CanvasWidget::mouseMoveEvent(QMouseEvent *event) {
+void CanvasWidget::mouseReleaseEvent(QMouseEvent *event) {
   if (!painting)
     return;
 
-  int x = static_cast<int>(event->position().x()) - (width() - 800) / 2;
+  painting = false;
+  QPoint pos = toCanvasCoords(event);
 
-  int y = static_cast<int>(event->position().y()) - (height() - 600) / 2;
-
-  int dx = x - lastPoint.x();
-  int dy = y - lastPoint.y();
-
-  int steps = std::max(std::abs(dx), std::abs(dy));
-
-  if (steps == 0)
-    return;
-
-  for (int i = 0; i <= steps; i++) {
-    float t = static_cast<float>(i) / steps;
-
-    int px = static_cast<int>(lastPoint.x() + dx * t);
-
-    int py = static_cast<int>(lastPoint.y() + dy * t);
-
-    applyTool(px, py);
+  Tool *tool = toolManager.getCurrentTool();
+  if (tool) {
+    ToolContext context{layerManager, document.getCanvas()};
+    tool->onRelease(context, pos.x(), pos.y());
   }
-
-  lastPoint = QPoint(x, y);
 
   update();
 }
 
-void CanvasWidget::mouseReleaseEvent(QMouseEvent *) { painting = false; }
-
 void CanvasWidget::setBrushTool() { toolManager.setCurrentTool(&brushTool); }
-
 void CanvasWidget::setEraserTool() { toolManager.setCurrentTool(&eraserTool); }
+void CanvasWidget::setFillTool() { toolManager.setCurrentTool(&fillTool); }
+void CanvasWidget::setSelectionTool() {
+  toolManager.setCurrentTool(&selectionTool);
+}
+void CanvasWidget::setMoveTool() { toolManager.setCurrentTool(&moveTool); }
+void CanvasWidget::setShapeTool() { toolManager.setCurrentTool(&shapeTool); }
+
+void CanvasWidget::addLayer() {
+  int count = static_cast<int>(document.getLayers().size());
+  layerManager.addLayer("Layer " + std::to_string(count + 1));
+  emit layersChanged();
+  update();
+}
 
 void CanvasWidget::setActiveLayer(int index) {
   layerManager.setActiveLayer(index);
@@ -140,63 +185,82 @@ void CanvasWidget::setActiveLayer(int index) {
 }
 
 int CanvasWidget::getActiveLayerIndex() const {
-  return static_cast<int>(layerManager.getActiveLayerIndex());
+  return layerManager.getActiveLayerIndex();
 }
+
 void CanvasWidget::selectCanvas() {
   layerManager.clearActiveLayer();
   update();
 }
+
 void CanvasWidget::removeLayer(int index) {
   layerManager.removeLayer(index);
-
   emit layersChanged();
-
   update();
 }
+
 void CanvasWidget::renameLayer(int index, const std::string &name) {
   document.renameLayer(index, name);
-
   emit layersChanged();
-
   update();
 }
-void CanvasWidget::reorderLayers(int srcRow, int destRow) {
-  int activeIndex = layerManager.getActiveLayerIndex();
-  if (activeIndex == srcRow) {
-    layerManager.setActiveLayer(destRow);
-  } else {
-    if (srcRow < activeIndex && destRow >= activeIndex) {
-      layerManager.setActiveLayer(activeIndex - 1);
-    } else if (srcRow > activeIndex && destRow <= activeIndex) {
-      layerManager.setActiveLayer(activeIndex + 1);
-    }
-  }
 
+void CanvasWidget::reorderLayers(int srcRow, int destRow) {
   layerManager.reorderLayers(srcRow, destRow);
   emit layersChanged();
   update();
 }
+
 void CanvasWidget::toggleLayerVisibility(int index) {
   auto &layers = document.getLayers();
-
-  if (index < 0 || index >= layers.size())
+  if (index < 0 || index >= static_cast<int>(layers.size()))
     return;
-
   layers[index].setVisible(!layers[index].isVisible());
-
   update();
 }
 
 void CanvasWidget::setBrushColor(int r, int g, int b) {
   Color color(r, g, b, 255);
-
   brushTool.setColor(color);
   fillTool.setColor(color);
+  shapeTool.setColor(color);
 }
+
 void CanvasWidget::duplicateLayer(int index) {
   document.duplicateLayer(index);
-
   emit layersChanged();
+  update();
+}
+
+void CanvasWidget::clearActiveLayer() {
+  Layer *layer = layerManager.getActiveLayer();
+  if (!layer)
+    return;
+
+  auto &pixels = layer->getImage().getPixels();
+  std::fill(pixels.begin(), pixels.end(), 0);
+  update();
+}
+
+void CanvasWidget::clearAll() {
+  // Clear canvas to white
+  auto &canvasPixels = document.getCanvas().getPixels();
+  for (size_t i = 0; i < canvasPixels.size(); i += 4) {
+    canvasPixels[i] = 255;
+    canvasPixels[i + 1] = 255;
+    canvasPixels[i + 2] = 255;
+    canvasPixels[i + 3] = 255;
+  }
+
+  // Clear all layers
+  for (auto &layer : document.getLayers()) {
+    auto &pixels = layer.getImage().getPixels();
+    std::fill(pixels.begin(), pixels.end(), 0);
+  }
 
   update();
 }
+
+void CanvasWidget::setBrushSize(int size) { brushTool.setBrushSize(size); }
+
+void CanvasWidget::setEraserSize(int size) { eraserTool.setSize(size); }

@@ -3,10 +3,13 @@
 #include <QMainWindow>
 #include <QPushButton>
 
+#include <QComboBox>
 #include <QDropEvent>
+#include <QLabel>
 #include <QListWidget>
 #include <QMouseEvent>
-
+#include <QSlider>
+#include <QToolButton>
 
 class CanvasWidget;
 
@@ -33,14 +36,43 @@ public:
 private slots:
   void refreshLayerList();
   void onLayerSelected(int row);
-
   void deleteLayer();
   void toggleLayerVisibility();
   void renameLayer();
+  void updateStatusBar(int x, int y);
 
 private:
-  CanvasWidget *canvasWidget;
-  LayerListWidget *layerList;
+  void setupMenuBar();
+  void setupToolBar();
+  void setupToolOptionsBar();
+  void setupLayersPanel();
+  void setupStatusBar();
+  void applyGlobalStyle();
+  void setActiveTool(QToolButton *btn);
 
-  QPushButton *addLayerButton;
+  CanvasWidget *canvasWidget = nullptr;
+  LayerListWidget *layerList = nullptr;
+
+  QPushButton *addLayerButton = nullptr;
+  QLabel *statusCoords = nullptr;
+  QLabel *statusTool = nullptr;
+  QLabel *statusSize = nullptr;
+  QWidget *colorSwatch = nullptr;
+
+  QSlider *brushSizeSlider = nullptr;
+  QLabel *brushSizeLabel = nullptr;
+  QComboBox *shapeTypeCombo = nullptr;
+  QToolButton *shapeFilledBtn = nullptr;
+
+  QWidget *brushOptionsWidget = nullptr;
+  QWidget *shapeOptionsWidget = nullptr;
+
+  // Tool buttons for active state tracking
+  QToolButton *activeTool = nullptr;
+  QToolButton *brushBtn = nullptr;
+  QToolButton *eraserBtn = nullptr;
+  QToolButton *fillBtn = nullptr;
+  QToolButton *selectBtn = nullptr;
+  QToolButton *moveBtn = nullptr;
+  QToolButton *shapeBtn = nullptr;
 };

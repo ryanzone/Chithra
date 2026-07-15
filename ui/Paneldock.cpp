@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QPainter>
 #include <QStyle>
+#include <QStyleOption>
 #include <QWindow>
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -120,7 +121,10 @@ void PanelDockTitleBar::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 void PanelDockTitleBar::paintEvent(QPaintEvent *) {
-  // Let stylesheet handle the background; nothing extra needed.
+  QStyleOption opt;
+  opt.initFrom(this);
+  QPainter p(this);
+  style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

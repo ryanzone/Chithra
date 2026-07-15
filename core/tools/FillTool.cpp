@@ -43,8 +43,6 @@ void FillTool::apply(ToolContext &context, int startX, int startY) {
 
   queue.push({startX, startY});
 
-  queue.push({startX, startY});
-
   while (!queue.empty()) {
     auto [x, y] = queue.front();
 

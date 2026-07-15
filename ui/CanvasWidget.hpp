@@ -8,6 +8,7 @@
 #include "../core/tools/FillTool.hpp"
 #include "../core/tools/MoveTool.hpp"
 #include "../core/tools/SelectionTool.hpp"
+#include "../core/tools/ShapeTool.hpp"
 #include "../core/tools/ToolManager.hpp"
 #include <QMouseEvent>
 #include <QPoint>
@@ -20,25 +21,39 @@ public:
   explicit CanvasWidget(QWidget *parent = nullptr);
   void setBrushTool();
   void setEraserTool();
+  void setFillTool();
+  void setSelectionTool();
+  void setMoveTool();
+  void setShapeTool();
+
   Document &getDocument();
   const Document &getDocument() const;
+
   void addLayer();
   void setActiveLayer(int index);
   int getActiveLayerIndex() const;
   void removeLayer(int index);
-
   void renameLayer(int index, const std::string &name);
   void reorderLayers(int srcRow, int destRow);
-
   void toggleLayerVisibility(int index);
   void setBrushColor(int r, int g, int b);
   void selectCanvas();
   void duplicateLayer(int index);
-  void setFillTool();
-  void setSelectionTool();
-  void setMoveTool();
+
+  void clearActiveLayer();
+  void clearAll();
+
+  void setBrushSize(int size);
+  void setEraserSize(int size);
+
+  ShapeTool &getShapeTool() { return shapeTool; }
+
+  int getCanvasWidth() const { return document.getWidth(); }
+  int getCanvasHeight() const { return document.getHeight(); }
+
 signals:
   void layersChanged();
+  void cursorMoved(int x, int y);
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -47,7 +62,8 @@ protected:
   void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
-  void applyTool(int x, int y);
+  QPoint canvasOffset() const;
+  QPoint toCanvasCoords(QMouseEvent *event) const;
 
   Document document;
   Canvas canvas;
@@ -57,11 +73,11 @@ private:
 
   BrushTool brushTool;
   EraserTool eraserTool;
-
   SelectionTool selectionTool;
   FillTool fillTool;
   MoveTool moveTool;
-  bool painting = false;
+  ShapeTool shapeTool;
 
+  bool painting = false;
   QPoint lastPoint;
 };

@@ -18,7 +18,7 @@ int main() {
 
   layerManager.addLayer("Background");
 
-  ToolContext context{layerManager};
+  ToolContext context{layerManager, doc.getCanvas()};
 
   BrushTool brush(40, Color(255, 0, 0));
 

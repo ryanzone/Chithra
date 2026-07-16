@@ -1,4 +1,4 @@
-# Chithra
+![Chithra](ui/resources/icons/Chithra.png)
 
 <p align="center">
   <b>A modern layer-based raster graphics editor built with C++ and Qt.</b><br>

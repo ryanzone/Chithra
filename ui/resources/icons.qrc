@@ -1,13 +1,12 @@
 <RCC>
     <qresource prefix="/icons">
-<<<<<<< HEAD
+
         <file>icons/splash.jpg</file>
         <file>icons/chitra.svg</file>
         <file>icons/add-layer.svg</file>
         <file>icons/delete-layer.svg</file>
         <file>icons/eye-hidden.svg</file>
         <file>icons/eye-visible.svg</file>
-=======
 
         <!-- App -->
         <file>icons/chitra.svg</file>
@@ -48,7 +47,5 @@
         <file>icons/zoom-in.svg</file>
         <file>icons/zoom-out.svg</file>
         <file>icons/dock.svg</file>
-
->>>>>>> c51d724 (feat: implement move and selection tools with UI icons and core integration)
     </qresource>
 </RCC>

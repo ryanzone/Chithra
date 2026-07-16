@@ -23,7 +23,7 @@ compile_commands.json
 .vscode/
 
 # Generated images
-*.png
+
 
 # Logs
 *.log

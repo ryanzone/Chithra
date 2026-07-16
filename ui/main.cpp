@@ -4,8 +4,23 @@
 #include <QPixmap>
 #include <QSplashScreen>
 #include <QTimer>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <windows.h>
 
 int main(int argc, char *argv[]) {
+#ifdef _WIN32
+  HWND console = GetConsoleWindow();
+  if (console != nullptr)
+    ShowWindow(console, SW_HIDE);
+#endif
+
   QApplication app(argc, argv);
 
   QPixmap splashPixmap(":/icons/icons/Chithra.png");

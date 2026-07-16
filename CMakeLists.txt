@@ -11,6 +11,8 @@ set(CMAKE_PREFIX_PATH "D:/Qt/6.10.3/mingw_64")
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Svg)
 
+qt_standard_project_setup()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -23,11 +25,11 @@ add_library(chithra_core ${CORE_SOURCES})
 
 target_include_directories(chithra_core
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/core
-    ${PROJECT_SOURCE_DIR}/external
+        ${PROJECT_SOURCE_DIR}/core
+        ${PROJECT_SOURCE_DIR}/external
 )
 
-add_executable(Chithra
+qt_add_executable(Chithra
     ui/main.cpp
     ui/resources/icons.qrc
     ui/MainWindow.cpp
@@ -41,11 +43,18 @@ add_executable(Chithra
     ui/Paneldock.hpp
 )
 
-target_include_directories(Chithra PRIVATE ${PROJECT_SOURCE_DIR})
+target_include_directories(Chithra
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}
+)
 
 target_link_libraries(Chithra
     PRIVATE
-    chithra_core
-    Qt6::Widgets
-    Qt6::Svg
+        chithra_core
+        Qt6::Widgets
+        Qt6::Svg
 )
+
+if(MINGW)
+    target_link_options(Chithra PRIVATE "-mwindows")
+endif()

@@ -9,7 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_PREFIX_PATH "D:/Qt/6.10.3/mingw_64")
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Svg)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -47,4 +47,5 @@ target_link_libraries(Chithra
     PRIVATE
     chithra_core
     Qt6::Widgets
+    Qt6::Svg
 )

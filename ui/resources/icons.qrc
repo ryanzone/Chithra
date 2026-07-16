@@ -1,10 +1,54 @@
 <RCC>
     <qresource prefix="/icons">
+<<<<<<< HEAD
         <file>icons/splash.jpg</file>
         <file>icons/chitra.svg</file>
         <file>icons/add-layer.svg</file>
         <file>icons/delete-layer.svg</file>
         <file>icons/eye-hidden.svg</file>
         <file>icons/eye-visible.svg</file>
+=======
+
+        <!-- App -->
+        <file>icons/chitra.svg</file>
+        <file>icons/Chithra.png</file>
+
+        <!-- Layers -->
+        <file>icons/add-layer.svg</file>
+        <file>icons/delete-layer.svg</file>
+        <file>icons/copy.svg</file>
+        <file>icons/eye-hidden.svg</file>
+        <file>icons/eye-visible.svg</file>
+        <file>icons/chevron-left.svg</file>
+<file>icons/chevron-right.svg</file>
+
+        <!-- Drawing -->
+        <file>icons/brush.svg</file>
+        <file>icons/brush-cleaning.svg</file>
+        <file>icons/eraser.svg</file>
+        <file>icons/paint-bucket.svg</file>
+        <file>icons/pencil-line.svg</file>
+        <file>icons/palette.svg</file>
+        <file>icons/pipette.svg</file>
+
+        <!-- Selection / Transform -->
+        <file>icons/mouse-pointer-2.svg</file>
+        <file>icons/move.svg</file>
+        <file>icons/crop.svg</file>
+
+        <!-- Shapes -->
+        <file>icons/square.svg</file>
+        <file>icons/circle.svg</file>
+
+        <!-- History -->
+        <file>icons/undo.svg</file>
+        <file>icons/redo.svg</file>
+
+        <!-- View -->
+        <file>icons/zoom-in.svg</file>
+        <file>icons/zoom-out.svg</file>
+        <file>icons/dock.svg</file>
+
+>>>>>>> c51d724 (feat: implement move and selection tools with UI icons and core integration)
     </qresource>
 </RCC>

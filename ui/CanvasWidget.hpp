@@ -25,6 +25,8 @@ public:
   void setSelectionTool();
   void setMoveTool();
   void setShapeTool();
+  Image &getCanvas();
+  const Image &getCanvas() const;
 
   Document &getDocument();
   const Document &getDocument() const;

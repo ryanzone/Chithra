@@ -34,8 +34,8 @@ void CanvasWidget::paintEvent(QPaintEvent *) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing, false);
 
-  // Checkerboard background behind canvas
-  painter.fillRect(rect(), QColor(30, 30, 30));
+  // Set the canvas workspace background to #000326
+  painter.fillRect(rect(), QColor(0, 3, 38));
 
   QPoint off = canvasOffset();
 
@@ -243,7 +243,6 @@ void CanvasWidget::clearActiveLayer() {
 }
 
 void CanvasWidget::clearAll() {
-  // Clear canvas to white
   auto &canvasPixels = document.getCanvas().getPixels();
   for (size_t i = 0; i < canvasPixels.size(); i += 4) {
     canvasPixels[i] = 255;
@@ -252,7 +251,6 @@ void CanvasWidget::clearAll() {
     canvasPixels[i + 3] = 255;
   }
 
-  // Clear all layers
   for (auto &layer : document.getLayers()) {
     auto &pixels = layer.getImage().getPixels();
     std::fill(pixels.begin(), pixels.end(), 0);
@@ -262,5 +260,9 @@ void CanvasWidget::clearAll() {
 }
 
 void CanvasWidget::setBrushSize(int size) { brushTool.setBrushSize(size); }
-
 void CanvasWidget::setEraserSize(int size) { eraserTool.setSize(size); }
+
+// Return Image& instead of Canvas& to expose the underlying pixel buffer to
+// MainWindow
+Image &CanvasWidget::getCanvas() { return document.getCanvas(); }
+const Image &CanvasWidget::getCanvas() const { return document.getCanvas(); }

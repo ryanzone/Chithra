@@ -3,7 +3,6 @@
 #include "../document/Layer.hpp"
 #include <queue>
 #include <utility>
-#include <vector>
 
 FillTool::FillTool(Color color) : fillColor(color) {}
 
@@ -20,7 +19,6 @@ void FillTool::apply(ToolContext &context, int startX, int startY) {
   auto &pixels = image->getPixels();
 
   int width = image->getWidth();
-
   int height = image->getHeight();
 
   if (startX < 0 || startY < 0 || startX >= width || startY >= height) {
@@ -30,52 +28,54 @@ void FillTool::apply(ToolContext &context, int startX, int startY) {
   int startIndex = (startY * width + startX) * 4;
 
   uint8_t targetR = pixels[startIndex];
-
   uint8_t targetG = pixels[startIndex + 1];
-
   uint8_t targetB = pixels[startIndex + 2];
-
   uint8_t targetA = pixels[startIndex + 3];
+
+  // Prevent infinite loops / useless work if filling with the same color
+  if (targetR == fillColor.r && targetG == fillColor.g &&
+      targetB == fillColor.b && targetA == fillColor.a) {
+    return;
+  }
 
   std::queue<std::pair<int, int>> queue;
 
-  std::vector<bool> visited(width * height, false);
+  // Paint the starting pixel immediately so neighbors don't re-push it
+  pixels[startIndex] = fillColor.r;
+  pixels[startIndex + 1] = fillColor.g;
+  pixels[startIndex + 2] = fillColor.b;
+  pixels[startIndex + 3] = fillColor.a;
 
   queue.push({startX, startY});
 
+  int dx[4] = {1, -1, 0, 0};
+  int dy[4] = {0, 0, 1, -1};
+
   while (!queue.empty()) {
     auto [x, y] = queue.front();
-
     queue.pop();
 
-    if (x < 0 || y < 0 || x >= width || y >= height) {
-      continue;
+    for (int i = 0; i < 4; ++i) {
+      int nx = x + dx[i];
+      int ny = y + dy[i];
+
+      if (nx >= 0 && ny >= 0 && nx < width && ny < height) {
+        int nIndex = (ny * width + nx) * 4;
+
+        // Check if neighbor matches the target color
+        if (pixels[nIndex] == targetR && pixels[nIndex + 1] == targetG &&
+            pixels[nIndex + 2] == targetB && pixels[nIndex + 3] == targetA) {
+
+          // Paint immediately to mark it as visited
+          pixels[nIndex] = fillColor.r;
+          pixels[nIndex + 1] = fillColor.g;
+          pixels[nIndex + 2] = fillColor.b;
+          pixels[nIndex + 3] = fillColor.a;
+
+          queue.push({nx, ny});
+        }
+      }
     }
-
-    int pixelPos = y * width + x;
-
-    if (visited[pixelPos]) {
-      continue;
-    }
-
-    visited[pixelPos] = true;
-
-    int index = pixelPos * 4;
-
-    if (pixels[index] != targetR || pixels[index + 1] != targetG ||
-        pixels[index + 2] != targetB || pixels[index + 3] != targetA) {
-      continue;
-    }
-
-    pixels[index] = fillColor.r;
-    pixels[index + 1] = fillColor.g;
-    pixels[index + 2] = fillColor.b;
-    pixels[index + 3] = fillColor.a;
-
-    queue.push({x + 1, y});
-    queue.push({x - 1, y});
-    queue.push({x, y + 1});
-    queue.push({x, y - 1});
   }
 }
 

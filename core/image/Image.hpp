@@ -15,6 +15,8 @@ public:
 
   int getWidth() const;
   int getHeight() const;
+  void setWidth(int w) { width = w; }
+  void setHeight(int h) { height = h; }
 
   std::vector<uint8_t> &getPixels();
   const std::vector<uint8_t> &getPixels() const;

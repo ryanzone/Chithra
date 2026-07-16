@@ -1,5 +1,6 @@
 # Build directories
 build/
+build-release/
 
 # CMake
 CMakeCache.txt
@@ -30,5 +31,35 @@ compile_commands.json
 # OS files
 .DS_Store
 Thumbs.db
-
+.ps1
 *.exe
+Untitled-1.md
+
+
+core/document/DocumentState.*
+core/file/AutoSave.*
+core/file/ExportManager.*
+core/file/RecentFiles.*
+
+core/history/CommandExecutor.*
+core/history/HistoryEntry.hpp
+core/history/RedoStack.*
+core/history/UndoStack.*
+
+core/managers/ClipboardManager.*
+core/managers/SettingsManager.*
+
+core/render/ThumbnailRenderer.*
+
+core/selection/SelectionManager.*
+
+core/tools/ColorPickerTool.*
+core/tools/HandTool.*
+core/tools/ZoomTool.*
+
+ui/ColorPickerDialog.*
+ui/HistoryPanel.*
+ui/PreferencesDialog.*
+ui/PropertiesPanel.*
+
+create_issues.ps1

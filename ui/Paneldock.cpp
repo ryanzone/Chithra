@@ -3,7 +3,9 @@
 #include <QApplication>
 #include <QEvent>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QPainter>
+#include <QPixmap>
 #include <QStyle>
 #include <QStyleOption>
 #include <QWindow>
@@ -15,8 +17,8 @@ static constexpr int kTitleBarHeight = 26;
 
 static const char *kTitleBarStyle = R"(
   PanelDockTitleBar {
-    background: #2a2a2a;
-    border-bottom: 1px solid #111111;
+    background: #000326;
+    border-bottom: 1px solid #000326;
   }
 )";
 
@@ -30,20 +32,33 @@ static const char *kTitleLabelStyle = R"(
 )";
 
 static const char *kIconBtnStyle = R"(
-  QToolButton {
-    background: transparent;
-    border: none;
-    color: #888888;
-    border-radius: 2px;
-  }
-  QToolButton:hover {
-    background: #3c3c3c;
-    color: #cccccc;
-  }
-  QToolButton:pressed {
-    background: #484848;
-  }
+QToolButton{
+    background:transparent;
+    border:none;
+    border-radius:4px;
+    padding:2px;
+}
+
+QToolButton:hover{
+    background: rgba(255, 255, 255, 0.1); 
+}
+
+QToolButton:pressed{
+    background: rgba(255, 255, 255, 0.2);
+}
 )";
+
+static QIcon getTintedIcon(const QString &path, const QColor &color) {
+  QIcon icon(path);
+  QPixmap pixmap = icon.pixmap(QSize(16, 16));
+
+  QPainter painter(&pixmap);
+  painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+  painter.fillRect(pixmap.rect(), color);
+  painter.end();
+
+  return QIcon(pixmap);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PanelDockTitleBar
@@ -55,28 +70,39 @@ PanelDockTitleBar::PanelDockTitleBar(const QString &title, QWidget *parent)
 
   auto *layout = new QHBoxLayout(this);
   layout->setContentsMargins(8, 0, 4, 0);
-  layout->setSpacing(2);
+  layout->setSpacing(4);
 
   m_title = new QLabel(title, this);
   m_title->setStyleSheet(kTitleLabelStyle);
 
-  // Float/dock toggle button (⧉ when docked, ⊟ when floating)
+  // Float button
   m_floatBtn = new QToolButton(this);
-  m_floatBtn->setText("\u29C9"); // ⧉
-  m_floatBtn->setFixedSize(18, 18);
-  m_floatBtn->setToolTip("Float / Dock panel");
+  m_floatBtn->setIcon(getTintedIcon(":/icons/icons/dock.svg", Qt::white));
+  m_floatBtn->setIconSize(QSize(16, 16));
+  m_floatBtn->setFixedSize(22, 22);
+  m_floatBtn->setToolTip("Dock Panel");
   m_floatBtn->setStyleSheet(kIconBtnStyle);
+
   connect(m_floatBtn, &QToolButton::clicked, this,
           &PanelDockTitleBar::floatToggleRequested);
 
-  // Collapse arrow
+  // Collapse button
   m_collapseBtn = new QToolButton(this);
   m_collapseBtn->setCheckable(true);
   m_collapseBtn->setChecked(true);
-  m_collapseBtn->setArrowType(Qt::DownArrow);
-  m_collapseBtn->setFixedSize(18, 18);
+  m_collapseBtn->setIcon(
+      getTintedIcon(":/icons/icons/chevron-left.svg", Qt::white));
+  m_collapseBtn->setIconSize(QSize(16, 16));
+  m_collapseBtn->setFixedSize(22, 22);
   m_collapseBtn->setToolTip("Collapse / Expand");
   m_collapseBtn->setStyleSheet(kIconBtnStyle);
+
+  connect(m_collapseBtn, &QToolButton::toggled, this, [this](bool expanded) {
+    m_collapseBtn->setIcon(
+        getTintedIcon(expanded ? ":/icons/icons/chevron-left.svg"
+                               : ":/icons/icons/chevron-right.svg",
+                      Qt::white));
+  });
 
   layout->addWidget(m_title);
   layout->addStretch();
@@ -85,10 +111,8 @@ PanelDockTitleBar::PanelDockTitleBar(const QString &title, QWidget *parent)
 }
 
 // Drag-to-move when the dock is floating ─────────────────────────────────────
-
 void PanelDockTitleBar::mousePressEvent(QMouseEvent *event) {
   if (event->button() == Qt::LeftButton) {
-    // Only drag if our top-level is actually a floating dock
     QWidget *top = window();
     if (top && top->isWindow()) {
       m_dragging = true;
@@ -139,7 +163,6 @@ PanelDock::PanelDock(const QString &title, QWidget *parent)
   m_titleBar = new PanelDockTitleBar(title, this);
   setTitleBarWidget(m_titleBar);
 
-  // Float/undock toggle via the title bar button
   connect(m_titleBar, &PanelDockTitleBar::floatToggleRequested, this,
           [this]() { setFloating(!isFloating()); });
   connect(this, &QDockWidget::topLevelChanged, this,
@@ -148,18 +171,15 @@ PanelDock::PanelDock(const QString &title, QWidget *parent)
 
 void PanelDock::applyFloatingStyle(bool floating) {
   if (floating) {
-    // Remove the OS window frame; our title bar is the chrome.
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint |
                    Qt::WindowStaysOnTopHint);
 
-    // Thin border so the panel has a defined edge against the canvas
     setStyleSheet(R"(
       QDockWidget#PanelDock {
-        border: 1px solid #111111;
+        border: 1px solid #000326;
       }
     )");
 
-    // Re-show after flag change (required after setWindowFlags)
     show();
   } else {
     setWindowFlags(Qt::Widget);

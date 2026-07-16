@@ -24,6 +24,8 @@ public:
   void duplicateLayer(size_t index);
   void renameLayer(size_t index, const std::string &name);
   void reorderLayers(int srcRow, int destRow);
+  void setWidth(int w) { width = w; }
+  void setHeight(int h) { height = h; }
 
   std::vector<Layer> &getLayers();
   const std::vector<Layer> &getLayers() const;

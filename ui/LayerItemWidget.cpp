@@ -39,15 +39,11 @@ LayerItemWidget::LayerItemWidget(const QString &name, bool visible,
 
   setStyleSheet(R"(
         QWidget {
-            background-color: #323232;
-        }
-
-        QWidget:hover {
-            background-color: #3a3a3a;
+            background-color: transparent;
         }
 
         QLabel {
-            color: #e0e0e0;
+            color: #EAEFF5;
         }
 
         QToolButton#visibilityButton {
@@ -64,16 +60,12 @@ void LayerItemWidget::mousePressEvent(QMouseEvent *event) {
 
 void LayerItemWidget::contextMenuEvent(QContextMenuEvent *event) {
   QMenu menu(this);
-
   QAction *renameAction = menu.addAction("Rename Layer");
-
   QAction *deleteAction = menu.addAction("Delete Layer");
-
   QAction *selected = menu.exec(event->globalPos());
 
   if (selected == renameAction)
     emit renameRequested();
-
   if (selected == deleteAction)
     emit deleteRequested();
 }

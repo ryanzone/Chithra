@@ -40,6 +40,8 @@ private slots:
   void toggleLayerVisibility();
   void renameLayer();
   void updateStatusBar(int x, int y);
+  void openFile();
+  void saveFile();
 
 private:
   void setupMenuBar();
